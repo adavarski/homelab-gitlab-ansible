@@ -25,4 +25,4 @@ $ ansible-playbook -i ./inventory.ini gitlab.yml
 # systemctl restart gitlab-runner 
 ```
 
-### [GitLab runners & CI/CD NOTES](./README-gitlab-runner-NOTES.md)
+### [GitLab Runners Notes & CI/CD Examples](./README-gitlab-runner-NOTES.md)
