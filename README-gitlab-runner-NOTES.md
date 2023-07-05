@@ -1,19 +1,18 @@
-### Gitlab-Runners Notes/Examples:
+## Gitlab-Runners Notes/Examples:
 
-We can have for example 2(n) shared gitlab-runners: with docker & linux tags
+We can have for example 3(n) shared gitlab-runners: with docker, linux, k8s tags
 
-1. --executor = "shell" --> --tag-list linux
+```
+--executor = "shell" --> --tag-list linux
 
-2. --executor "docker" --> --tag-list docker 
+--executor "docker" --> --tag-list docker 
 
-3. --executor kubernetes (TBD) 
-
-
-Ref: https://gitlab.devops.davar.com/admin/runners/4 ---> Tags view/edit
+--executor kubernetes --> --tag-list k8s 
+```
 
 Ref: https://docs.gitlab.com/runner/register/ 
 
-Ref: shell executor example (tag:linux): https://docs.gitlab.com/runner/executors/shell.html
+### shell executor example (tag:linux): https://docs.gitlab.com/runner/executors/shell.html
 
 ```
 ...
@@ -26,7 +25,7 @@ Ref: shell executor example (tag:linux): https://docs.gitlab.com/runner/executor
 ...
 ```
 
-Ref: docker executor example: 
+### docker executor example: 
 
 ```
       gitlab-runner register --executor docker  \
@@ -36,7 +35,7 @@ Ref: docker executor example:
 
 ```
 
-Examples:
+CI/CD Examples:
 
 ```
 1.k8s app deploy (pipelines deploy stage) example:
@@ -76,10 +75,11 @@ default:
   tags:
     - docker
 
-3. ansible example (k8s deploy via nasible playbook:kubeadm) : k8s chmod 0600 $SSH_PRIVATE_KEY -> https://docs.gitlab.com/runner/executors/shell.html
+3. ansible example (k8s deploy via ansible playbook:kubeadm) : k8s chmod 0600 $SSH_PRIVATE_KEY -> https://docs.gitlab.com/runner/executors/shell.html
 
 3.1. shell executor example (tags: linux): 
- script:
+
+  script:
     - cd ${CI_PROJECT_DIR}
     - cat ${CI_PROJECT_DIR}/inventory/* > ${CI_PROJECT_DIR}/inventory.ini
     - chmod 0600 $SSH_PRIVATE_KEY
@@ -97,14 +97,13 @@ default:
     - export ANSIBLE_HOST_KEY_CHECKING=False
     - ansible-playbook --private-key ~/.ssh/id_rsa -u root -i ${CI_PROJECT_DIR}/inventory.ini ./postgresql_cluster/deploy_pgcluster.yml
 ```
+### Notes: self signed certs and gitlab-runner resolver 
 
-### Notes: self signed certs and gitlab-runner resolver (shared gitlab-runner: docker executor examples); terraform state;  GitLab docker registry, docker insecure registry; GitLab CI/CD pipelines: Ansible; etc.  
+Shared gitlab-runner: docker executor examples; terraform state;  GitLab docker registry, docker insecure registry; GitLab CI/CD pipelines: Ansible; etc.  
 
 GitLab CI/CD examples: 
 
-- Ref1: https://github.com/adavarski/devops-server-docker-ansible
-- Ref2: https://github.com/adavarski/devops-server-postgres-ha-prod
-- Ref3: https://github.com/adavarski/devops-server-db-proxy
+Ref: https://github.com/adavarski/devops-server-postgres-ha-prod
 
 ```
 1.For a shared runner, as Administrator go to the GitLab Admin Area and click Overview > Runners (get token: eztv9hLB4tP81jVy5WkD)
@@ -127,11 +126,11 @@ GitLab CI/CD examples:
 
 Edit file and Fix 
 
-- gitlab-runner resolver fix:
+- gitlab-runner resolver Fix:
 
     extra_hosts = ["gitlab.devops.davar.com:192.168.1.99"]
  
-- Add "/var/run/docker.sock:/var/run/docker.sock" and tls_verify = false to build docker images on gitlab-runner via GitLab CI/CD pipeline (Ref: error during connect: Post http://docker:2375/v1.40/auth: dial tcp: lookup docker on 192.168.1.1:53: no such host) --->  Ref:  https://github.com/adavarski/devops-server-db-proxy
+- Add "/var/run/docker.sock:/var/run/docker.sock" and tls_verify = false to build docker images on gitlab-runner via GitLab CI/CD pipeline (Ref: error during connect: Post http://docker:2375/v1.40/auth: dial tcp: lookup docker on 192.168.1.1:53: no such host) 
 
 root@devops:/etc/k8s# cat /etc/gitlab-runner/config.toml 
 concurrent = 1
@@ -164,9 +163,9 @@ check_interval = 0
     shm_size = 268435456
     extra_hosts = ["gitlab.devops.davar.com:192.168.1.99"]
 
-root@devops:~/.ssh# systemctl restart gitlab-runner
+# systemctl restart gitlab-runner
 
-Ref3: https://github.com/adavarski/devops-server-db-proxy (for k8s resolver fixes):
+- k8s resolver fixes):
 
 $ curl -sfL https://get.k3s.io | sh -
 $ sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/k3s-config
@@ -185,14 +184,6 @@ $ sudo diff coredns-fixes.yaml /var/lib/rancher/k3s/server/manifests/coredns.yam
 <         forward . 192.168.1.100
 <     }
 $ kubectl apply -f coredns-fixes.yaml
-serviceaccount/coredns unchanged
-Warning: rbac.authorization.k8s.io/v1beta1 ClusterRole is deprecated in v1.17+, unavailable in v1.22+; use rbac.authorization.k8s.io/v1 ClusterRole
-clusterrole.rbac.authorization.k8s.io/system:coredns unchanged
-Warning: rbac.authorization.k8s.io/v1beta1 ClusterRoleBinding is deprecated in v1.17+, unavailable in v1.22+; use rbac.authorization.k8s.io/v1 ClusterRoleBinding
-clusterrolebinding.rbac.authorization.k8s.io/system:coredns unchanged
-configmap/coredns unchanged
-deployment.apps/coredns configured
-service/kube-dns unchanged
 
 2.Terraform state (GitLab CI/CD pipelines)
 
@@ -260,165 +251,5 @@ Ref (HOWTO):
 - https://docs.gitlab.com/runner/register/ & https://docs.gitlab.com/runner/executors/shell.html
 - https://docs.gitlab.com/ee/user/packages/container_registry/
 
-REF: gitlab-runners-infra: cloudinit.yaml example (for GitLab CI/CD pipelines with terraform on Hetzner Cloud/AWS/etc.) 
-```
-#cloud-config                                                                                                                                                                                                [40/92]
-groups:
-- docker
-users:
-- name: gitlab-runner
-  groups: docker
-apt:
-  sources:
-    docker.list:
-      source: 'deb [arch=amd64] https://download.docker.com/linux/ubuntu $RELEASE stable'
-      keyid: 0EBFCD88 
 
-package_upgrade: true
-package_update: true
-
-packages:
-- debian-archive-keyring
-- apt-transport-https
-- ca-certificates
-- software-properties-common
-- docker-ce
-
-write_files:
-  - owner: root:root
-    path: /etc/cron.d/your_cronjob
-    content: "* 5 * * * root (/usr/bin/docker ps --filter status=dead --filter status=exited -aq   |  /usr/bin/xargs /usr/bin/docker rm -v 2> /dev/null) || true"
-  - owner: root:root
-    path: /root/register.sh
-    content: |
-      curl -LJO "https://gitlab-runner-downloads.s3.amazonaws.com/latest/deb/gitlab-runner_amd64.deb"
-      dpkg -i gitlab-runner_amd64.deb
-      ip route add 172.17.0.0/16 via 172.16.0.1 dev ens10
-      ip route add 172.18.0.0/16 via 172.16.0.1 dev ens10
-      ip route add 172.19.0.0/16 via 172.16.0.1 dev ens10
-      gitlab-runner register --executor docker  \
-        -u https://gitlab.gostudent.cloud/ \
-        --non-interactive \
-        -r $gitlab_registration_token$ \
-        --docker-privileged=true \
-        --docker-pull-policy=always \
-        --docker-shm-size=268435456 \
-        --docker-volumes='/cache' \
-        --docker-image="docker:19.03.12"
-runcmd:
-  - [/bin/bash, /root/register.sh]
-  
-### main.tf  
-
-VMs terraform (example: Hetzner Cloud):
-
-# SSH key to provision the runner
-data "hcloud_ssh_keys" "all_keys" {
-}
-
-# Get the network id to attach the runner to
-data "hcloud_network" "network" {
-  name = "vpc"
-}
-
-data "local_file" "cloudinit" {
-  filename = "cloudinit.yml"
-}
-
-# Create the bastion server to run the gitlab runner on and to create docker-machine instances from
-resource "hcloud_server" "infra_runner" {
-  count       = var.num_runners
-  name        = "gitlab-infra-runner-${count.index}"
-  image       = "ubuntu-20.04"
-  server_type = "cx21"
-
-  ssh_keys    = data.hcloud_ssh_keys.all_keys.ssh_keys.*.id
-  user_data   = replace(data.local_file.cloudinit.content, "$gitlab_registration_token$", var.gitlab_registration_token)
-}
-
-resource "hcloud_server_network" "wireguard_node_network" {
-  count      = var.num_runners
-  server_id  = hcloud_server.infra_runner[count.index].id
-  network_id = data.hcloud_network.network.id
-}
-
-### vars.tf
-variable "hcloud_token" {
-  type        = string
-  description = "The api token to use for connecting to Hetzner Cloud."
-}
-
-variable "gitlab_registration_token" {
-  type        = string
-  description = "The token to register the runner with on gitlab."
-}
-
-variable "num_runners" {
-  type        = number
-  description = "The number of runners to be launched."
-  default     = 1
-}
-
-### terraform.tfvars
-hcloud_token    = "XXXXXXX"
-
-### versions.tf
-terraform {
-  required_providers {
-    hcloud = {
-      source = "hetznercloud/hcloud"
-    }
-  }
-  required_version = ">= 0.13"
-}
-
-### terraform.tf
-terraform {
-  backend "http" {
-  }
-}
-
-# Configure the Hetzner Cloud Provider
-provider "hcloud" {
-  token   = var.hcloud_token
-}
-
-### .gitignore
-# Terraform local state (including secrets in backend configuration)
-.terraform
-terraform.tfstate.*.backup
-# Ansible retry-files
-*.retry
-
-# Do not index inventory.ini files - they will be created automatically when needed
-inventory.ini
-
-### README.md
-Gitlab Infrastructure Runner
-=========
-
-This gitlab runner is a docker type runner prepared to run and deploy infrastructure projects.
-The runner is deployed attached to the shared services network and leverages the site-to-site VPN to connect to resources in all environments.
-
-The runner is designed to function as *group* level runner, reserved for infrastructure projects only.
-
-
-Local Use
-
-To use the repository locally, you must first initialize the remote terraform state.
-Please replace `GITLAB_USERNAME` and `GITLAB_API_TOKEN` with your respective credentials.
-
-When running terraform commands you will be asked for the `gitlab_registration_token` which you need to have access to.
-
-terraform init \
-    -backend-config="address=https://gitlab.gostudent.cloud/api/v4/projects/50/terraform/state/default" \
-    -backend-config="lock_address=https://gitlab.gostudent.cloud/api/v4/projects/50/terraform/state/default/lock" \
-    -backend-config="unlock_address=https://gitlab.gostudent.cloud/api/v4/projects/50/terraform/state/default/lock" \
-    -backend-config="username=GITLAB_USERNAME" \
-    -backend-config="password=GITLAB_API_TOKEN" \
-    -backend-config="lock_method=POST" \
-    -backend-config="unlock_method=DELETE" \
-    -backend-config="retry_wait_min=5"
-
-```
 
