@@ -1,0 +1,6 @@
+---
+- name: reconfigure gitlab
+  shell: gitlab-ctl reconfigure
+
+- name: reload gitlab
+  shell: SKIP_POST_DEPLOYMENT_MIGRATIONS=true gitlab-ctl reconfigure && gitlab-rake db:migrate && gitlab-ctl hup puma && gitlab-ctl restart sidekiq

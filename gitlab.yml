@@ -1,0 +1,10 @@
+---
+- name: install gitlab
+  hosts: all
+  tasks:
+    - include: tasks/prepare.yml
+    - include: tasks/install.yml
+    - include: tasks/ssl.yml
+    - include: tasks/configure.yml
+  handlers:
+    - include: tasks/handlers.yml

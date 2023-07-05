@@ -1,0 +1,25 @@
+---
+- name: backup gitlab
+  hosts: all
+  tasks:
+    - name: make a backup of the repositories
+      shell: gitlab-backup create
+
+    - name: make a backup of the omnibus data
+      shell: gitlab-ctl backup-etc
+
+    - name: find backup files
+      shell: (cd /etc/gitlab/config_backup; ls -t | head -n1) | cut -d'/' -f2
+      register: files_to_copy
+
+    - name: download secrets to local machine
+      fetch:
+        src: /etc/gitlab/config_backup/{{ item }}
+        dest: backup/
+        flat: yes
+      with_items: "{{ files_to_copy.stdout_lines }}"
+
+    - name: delete old backups
+      file:
+        state: absent
+        path: /etc/gitlab/config_backup

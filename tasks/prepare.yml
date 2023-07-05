@@ -1,0 +1,9 @@
+---
+- name: assign inventory name to unconfigured hostnames
+  hostname:
+    name: "{{ inventory_hostname }}"
+
+- name: update chache
+  apt:
+    update_cache: yes
+

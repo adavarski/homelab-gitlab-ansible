@@ -1,0 +1,10 @@
+---
+- name: Download gitlab
+  get_url: 
+     url: https://packages.gitlab.com/gitlab/gitlab-ce/packages/ubuntu/focal/gitlab-ce_14.5.2-ce.0_amd64.deb/download.deb
+     dest: /tmp/gitlab-ce_14.3.6-ce.0_arm64.deb
+
+- name: Install gitlab
+  command: gdebi -n /tmp/gitlab-ce_14.3.6-ce.0_arm64.deb
+  notify:
+    - reload gitlab

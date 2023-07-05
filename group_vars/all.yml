@@ -1,0 +1,18 @@
+---
+gitlab_version: 14.5.2-ce.0
+domain: gitlab.devops.davar.com
+
+
+# SSL Configuration.
+gitlab_redirect_http_to_https: true
+gitlab_ssl_certificate: "/etc/gitlab/ssl/{{ domain }}.crt"
+gitlab_ssl_certificate_key: "/etc/gitlab/ssl/{{ domain }}.key"
+
+
+# SSL Self-signed Certificate Configuration.
+gitlab_create_self_signed_cert: true
+gitlab_self_signed_cert_subj: "/C=BG/ST=Sofia/L=Bulgaria/O=DevOps/CN={{ domain }}"
+
+gitlab_runner_registration_token: Qnstf9dBMsBxfZQYWC-d
+
+gitlab_email_from: gitlab@davar.com

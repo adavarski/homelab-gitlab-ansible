@@ -1,0 +1,22 @@
+concurrent = 50   # All registered runners can run up to 50 concurrent jobs
+
+[[runners]]
+  url = "https://{{ domain }}"
+  name = "hetzner-autoscale-runner"
+  executor = "docker+machine"        # This runner is using the 'docker+machine' executor
+  limit = 10                         # This runner can execute up to 10 jobs (created machines)
+  [runners.docker]
+    image = "docker:19.03.12"                 # The default image used for jobs
+    privileged = true
+    volumes = ["/cache", "/var/run/docker.sock:/var/run/docker.sock"]
+  [runners.machine]
+    IdleCount = 0  
+    IdleTime = 600
+    MaxGrowthRate = 1          
+    MachineName = "gitlab-runner-%s"    # Each machine will have a unique name ('%s' is required)
+    MachineDriver = "hetzner"
+    MachineOptions = [
+      "hetzner-api-token={{ hetzner_api_token }}",
+      "hetzner-server-type={{ hetzner_instance_type }}",
+      "engine-install-url=https://releases.rancher.com/install-docker/19.03.9.sh",
+    ]

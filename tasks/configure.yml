@@ -1,0 +1,36 @@
+---
+- name: configure gitlab
+  lineinfile:
+    path: /etc/gitlab/gitlab.rb
+    regexp: "{{ item.regex }}"
+    line: "{{ item.line }}"
+    backrefs: yes
+  notify:
+  - reconfigure gitlab
+  loop:
+    - { regex: "^external_url(.*)", line: "external_url 'https://{{ domain }}'" }
+    - { regex: "letsencrypt\\['enable'\\]", line: "letsencrypt['enable'] = false" }
+    - { regex: "registry_external_url", line: "registry_external_url 'https://{{ domain }}:2053'" }
+    - { regex: "gitlab_rails\\['packages_enabled'\\]", line: "gitlab_rails['packages_enabled'] = true" }
+    - { regex: "gitlab_rails\\['packages_object_store_enabled'\\]", line: "gitlab_rails['packages_object_store_enabled'] = true" }
+    - { regex: "gitlab_rails\\['packages_object_store_remote_directory'\\]", line: "gitlab_rails['packages_object_store_remote_directory'] = 'davar-gitlab-registry'" }
+    - { regex: "gitlab_rails\\['packages_object_store_direct_upload'\\]", line: "gitlab_rails['packages_object_store_direct_upload'] = false" }
+    - { regex: "gitlab_rails\\['packages_object_store_background_upload'\\]", line: "gitlab_rails['packages_object_store_background_upload'] = true" }
+    - { regex: "gitlab_rails\\['packages_object_store_proxy_download'\\]", line: "gitlab_rails['packages_object_store_proxy_download'] = false" }
+    - { regex: "gitlab_rails\\['terraform_state_enabled'\\]", line: "gitlab_rails['terraform_state_enabled'] = true"}
+    - { regex: "gitlab_rails\\['terraform_state_storage_path'\\]", line: "gitlab_rails['terraform_state_storage_path'] = '/var/opt/gitlab/gitlab-rails/shared/terraform_state'" }
+
+- name: configure from email
+  lineinfile:
+    path: /etc/gitlab/gitlab.rb
+    regexp: "{{ item.regex }}"
+    line: "{{ item.line }}"
+    backrefs: yes
+  notify:
+  - reconfigure gitlab
+  loop:
+    - { regex: "gitlab_rails\\['gitlab_email_from'\\]", line: "gitlab_rails['gitlab_email_from'] = '{{ gitlab_email_from }}'" }
+  when: gitlab_email_from is defined and gitlab_email_from | length > 0
+
+
+
