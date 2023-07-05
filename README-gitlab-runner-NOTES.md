@@ -1,6 +1,8 @@
-## Gitlab-Runners Notes/Examples:
+# Gitlab-Runners Notes & CI/CD Examples:
 
-We can have for example 3(n) shared gitlab-runners: with docker, linux, k8s tags
+## Executor examples
+
+We can have for example (n) shared gitlab-runners: with docker, linux, k8s tags
 
 ```
 --executor = "shell" --> --tag-list linux
@@ -35,14 +37,17 @@ Ref: https://docs.gitlab.com/runner/register/
 
 ```
 
-CI/CD Examples:
+### k8s executor example (TBD)
+
+
+## CI/CD Examples:
 
 ```
 1.k8s app deploy (pipelines deploy stage) example:
 
 1.1.using shell executor (tags: linux)
 
-run on gitlab-runner -> executor:shell -> tag:linux. gitlab-runner = shell executor, not docker executor to use prconfigured KUBECONFIG file (file: /etc/k8s/prod) -->  kubectl --kubeconfig /etc/k8s/prod --token="$KUBE_TOKEN" -n $K8SNAMESPACE set image $K8SDEPLOYMENT $K8SREPLICA=$CI_REGISTRY_IMAGE:${CI_PIPELINE_ID}
+run on gitlab-runner -> executor:shell -> tag:linux. gitlab-runner = shell executor, use preconfigured KUBECONFIG file (file: /etc/k8s/prod) -->  kubectl --kubeconfig /etc/k8s/prod --token="$KUBE_TOKEN" -n $K8SNAMESPACE set image $K8SDEPLOYMENT $K8SREPLICA=$CI_REGISTRY_IMAGE:${CI_PIPELINE_ID}
 
 prod_k8s_deploy:
   stage: deploy
@@ -97,15 +102,14 @@ default:
     - export ANSIBLE_HOST_KEY_CHECKING=False
     - ansible-playbook --private-key ~/.ssh/id_rsa -u root -i ${CI_PROJECT_DIR}/inventory.ini ./postgresql_cluster/deploy_pgcluster.yml
 ```
-### Notes: self signed certs and gitlab-runner resolver 
-
-Shared gitlab-runner: docker executor examples; terraform state;  GitLab docker registry, docker insecure registry; GitLab CI/CD pipelines: Ansible; etc.  
+### Shared gitlab-runner: self signed certs and gitlab-runner resolver fixes, docker executor examples; terraform state;  GitLab docker registry, docker insecure registry; GitLab CI/CD pipelines: Ansible; etc.  
 
 GitLab CI/CD examples: 
 
 Ref: https://github.com/adavarski/devops-server-postgres-ha-prod
 
 ```
+### Install Shared gitlab-runner:
 1.For a shared runner, as Administrator go to the GitLab Admin Area and click Overview > Runners (get token: eztv9hLB4tP81jVy5WkD)
 
       curl -LJO "https://gitlab-runner-downloads.s3.amazonaws.com/latest/deb/gitlab-runner_amd64.deb"
@@ -132,7 +136,7 @@ Edit file and Fix
  
 - Add "/var/run/docker.sock:/var/run/docker.sock" and tls_verify = false to build docker images on gitlab-runner via GitLab CI/CD pipeline (Ref: error during connect: Post http://docker:2375/v1.40/auth: dial tcp: lookup docker on 192.168.1.1:53: no such host) 
 
-root@devops:/etc/k8s# cat /etc/gitlab-runner/config.toml 
+# cat /etc/gitlab-runner/config.toml 
 concurrent = 1
 check_interval = 0
 
@@ -165,7 +169,7 @@ check_interval = 0
 
 # systemctl restart gitlab-runner
 
-- k8s resolver fixes):
+- k8s resolver fixes:
 
 $ curl -sfL https://get.k3s.io | sh -
 $ sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/k3s-config
@@ -193,7 +197,7 @@ gitlab_rails['terraform_state_storage_path'] = "/var/opt/gitlab/gitlab-rails/sha
 #gitlab_rails['terraform_state_object_store_enabled'] = true
 #gitlab_rails['terraform_state_object_store_remote_directory'] = 'davar-gitlab-terraform'
 
-root@devops:~/.ssh# gitlab-ctl reconfigure
+# gitlab-ctl reconfigure
 
 GitLab CI/CD pipelines (add this):
 
@@ -243,13 +247,6 @@ configure:ansible:
 
 ```
 
-Ref (HOWTO):
-
-- https://otodiginet.com/software/how-to-install-gitlab-community-edition-ce-on-ubuntu-20-04-lts/
-- https://www.linuxhelp.com/how-to-install-gitlab-on-linux-mint-20
-- https://docs.gitlab.com/ee/administration/terraform_state & https://gitlab.devops.davar.com/help/user/infrastructure/iac/terraform_state.md
-- https://docs.gitlab.com/runner/register/ & https://docs.gitlab.com/runner/executors/shell.html
-- https://docs.gitlab.com/ee/user/packages/container_registry/
 
 
 
