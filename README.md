@@ -1,5 +1,6 @@
 
-Gitlab server install via ansible
+### Gitlab server with Docker Registry & Terraform state
+
 $ cd gitlab-ansible
 $ ansible-playbook -i ./inventory.ini gitlab.yml
 
