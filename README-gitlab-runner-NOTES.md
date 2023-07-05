@@ -104,8 +104,6 @@ default:
 ```
 ### Shared gitlab-runner: self signed certs and gitlab-runner resolver fixes, docker executor examples; terraform state;  GitLab docker registry, docker insecure registry; GitLab CI/CD pipelines: Ansible; etc.  
 
-GitLab CI/CD examples: 
-
 Ref: https://github.com/adavarski/devops-server-postgres-ha-prod
 
 ```
