@@ -26,3 +26,8 @@ $ ansible-playbook -i ./inventory.ini gitlab.yml
 ```
 
 ### [GitLab Runners Notes & CI/CD Examples](./README-gitlab-runner-NOTES.md)
+
+```
+$ sudo gitlab-ctl start
+$ sudo gitlab-ctl stop
+```
